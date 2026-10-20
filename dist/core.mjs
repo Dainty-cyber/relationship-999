@@ -46,7 +46,22 @@ export async function fingerprintBank(bank) {
 }
 
 export function freshProgress(bankId) {
-  return { version: 2, bankId, history: [] };
+  return { version: 3, bankId, currentId: null, history: [] };
+}
+
+function upgradeProgress(state) {
+  if (state.version !== 2) return state;
+  return {
+    version: 3, bankId: state.bankId, currentId: state.history.at(-1)?.id ?? null,
+    history: state.history.map(({ id, drawnAt, answeredAt }) => ({ id, drawnAt, answeredAt, deferredAt: null }))
+  };
+}
+
+const validTime = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
+const actionTime = (entry, now) => new Date(Math.max(Date.parse(now()), Date.parse(entry.drawnAt))).toISOString();
+
+function currentEntry(state) {
+  return state.history.find(entry => entry.id === state.currentId) ?? null;
 }
 
 export function restoreProgress(raw, bankId, questions) {
@@ -55,25 +70,31 @@ export function restoreProgress(raw, bankId, questions) {
   let parsed;
   try { parsed = typeof raw === 'string' ? JSON.parse(raw) : raw; }
   catch { return fresh('invalid'); }
-  if (!parsed || parsed.version !== 2) return fresh('invalid');
+  if (!parsed || ![2, 3].includes(parsed.version)) return fresh('invalid');
   if (parsed.bankId !== bankId) return fresh('bank-changed');
   if (!Array.isArray(parsed.history) || parsed.history.length > questions.length) return fresh('invalid');
+  const legacy = parsed.version === 2;
+  const currentId = legacy ? (parsed.history.at(-1)?.id ?? null) : parsed.currentId;
+  if (currentId !== null && typeof currentId !== 'string') return fresh('invalid');
   const validIds = new Set(questions.map(question => question.id));
   const seen = new Set();
   for (const [index, entry] of parsed.history.entries()) {
     if (!entry || !validIds.has(entry.id) || seen.has(entry.id) ||
-        typeof entry.drawnAt !== 'string' || !Number.isFinite(Date.parse(entry.drawnAt))) return fresh('invalid');
+        !validTime(entry.drawnAt)) return fresh('invalid');
     seen.add(entry.id);
-    if (entry.answeredAt !== null && (typeof entry.answeredAt !== 'string' ||
-        !Number.isFinite(Date.parse(entry.answeredAt)) || Date.parse(entry.answeredAt) < Date.parse(entry.drawnAt))) return fresh('invalid');
-    // At most the current (last) card may await confirmation. Earlier questions
-    // and all prerequisites for the final card must have been confirmed.
-    if (entry.answeredAt === null && index !== parsed.history.length - 1) return fresh('invalid');
+    if (entry.answeredAt !== null && (!validTime(entry.answeredAt) || Date.parse(entry.answeredAt) < Date.parse(entry.drawnAt))) return fresh('invalid');
+    const deferredAt = legacy ? null : entry.deferredAt;
+    if (deferredAt !== null && (!validTime(deferredAt) || Date.parse(deferredAt) < Date.parse(entry.drawnAt) || entry.answeredAt !== null)) return fresh('invalid');
+    if (legacy && entry.answeredAt === null && index !== parsed.history.length - 1) return fresh('invalid');
+    if (!legacy && entry.answeredAt === null && deferredAt === null && entry.id !== currentId) return fresh('invalid');
+    if (!legacy && entry.id === currentId && deferredAt !== null) return fresh('invalid');
     if (entry.id === FINAL_QUESTION_ID && (index !== questions.length - 1 ||
+        currentId !== FINAL_QUESTION_ID || deferredAt !== null ||
         parsed.history.slice(0, index).some(previous => !previous.answeredAt || previous.id === FINAL_QUESTION_ID))) return fresh('invalid');
   }
+  if (currentId !== null && !seen.has(currentId)) return fresh('invalid');
   return {
-    state: { version: 2, bankId, history: parsed.history.map(({ id, drawnAt, answeredAt }) => ({ id, drawnAt, answeredAt })) },
+    state: { version: 3, bankId, currentId, history: parsed.history.map(({ id, drawnAt, answeredAt, deferredAt }) => ({ id, drawnAt, answeredAt, deferredAt: legacy ? null : deferredAt })) },
     reason: null
   };
 }
@@ -87,7 +108,8 @@ export function secureRandomIndex(length) {
 }
 
 export function drawQuestion(state, questions, randomIndex = secureRandomIndex, now = () => new Date().toISOString()) {
-  if (state.history.at(-1)?.answeredAt === null) return { state, question: null };
+  state = upgradeProgress(state);
+  if (currentEntry(state)?.answeredAt === null) return { state, question: null };
   const used = new Set(state.history.map(entry => entry.id));
   let remaining = questions.filter(question => question.id !== FINAL_QUESTION_ID && !used.has(question.id));
   if (!remaining.length) {
@@ -103,27 +125,63 @@ export function drawQuestion(state, questions, randomIndex = secureRandomIndex, 
   const question = remaining[index];
   return {
     question,
-    state: { ...state, history: [...state.history, { id: question.id, drawnAt: now(), answeredAt: null }] }
+    state: { ...state, currentId: question.id, history: [...state.history, { id: question.id, drawnAt: now(), answeredAt: null, deferredAt: null }] }
   };
 }
 
 export function confirmAnswer(state, expectedId, now = () => new Date().toISOString()) {
-  const current = state.history.at(-1);
+  state = upgradeProgress(state);
+  const current = currentEntry(state);
   // A stale click from another tab cannot confirm a newly drawn question.
   if (!current || current.id !== expectedId || current.answeredAt !== null) return state;
-  const answeredAt = new Date(Math.max(Date.parse(now()), Date.parse(current.drawnAt))).toISOString();
-  return { ...state, history: [...state.history.slice(0, -1), { ...current, answeredAt }] };
+  const answeredAt = actionTime(current, now);
+  return { ...state, history: state.history.map(entry => entry.id === expectedId ? { ...entry, answeredAt, deferredAt: null } : entry) };
+}
+
+export function deferQuestion(state, expectedId, now = () => new Date().toISOString()) {
+  state = upgradeProgress(state);
+  const current = currentEntry(state);
+  if (!current || current.id !== expectedId || current.id === FINAL_QUESTION_ID || current.answeredAt !== null) return state;
+  return {
+    ...state, currentId: null,
+    history: state.history.map(entry => entry.id === expectedId ? { ...entry, deferredAt: actionTime(entry, now) } : entry)
+  };
+}
+
+export function resumeQuestion(state, id, now = () => new Date().toISOString()) {
+  state = upgradeProgress(state);
+  const target = state.history.find(entry => entry.id === id);
+  if (!target || target.id === FINAL_QUESTION_ID || target.answeredAt !== null || !target.deferredAt) return state;
+  const current = currentEntry(state);
+  if (current?.id === FINAL_QUESTION_ID && current.answeredAt === null) return state;
+  return {
+    ...state, currentId: id,
+    history: state.history.map(entry => {
+      if (entry.id === id) return { ...entry, deferredAt: null };
+      if (current?.id === entry.id && entry.answeredAt === null) return { ...entry, deferredAt: actionTime(entry, now) };
+      return entry;
+    })
+  };
 }
 
 export function roundStatus(state, questions) {
-  const current = state.history.at(-1) ?? null;
+  state = upgradeProgress(state);
+  const current = currentEntry(state);
   const answered = state.history.filter(entry => entry.answeredAt !== null);
   const ordinary = questions.filter(question => question.id !== FINAL_QUESTION_ID);
   const ordinaryAnswered = answered.filter(entry => entry.id !== FINAL_QUESTION_ID).length;
   const finalUnlocked = ordinaryAnswered === ordinary.length;
+  const used = new Set(state.history.map(entry => entry.id));
+  const unseenOrdinary = ordinary.filter(question => !used.has(question.id)).length;
+  const deferred = state.history.filter(entry => entry.deferredAt !== null && entry.answeredAt === null);
+  const pending = current?.answeredAt === null;
   return {
     current,
-    pending: current?.answeredAt === null,
+    pending,
+    deferred,
+    deferredCount: deferred.length,
+    unseenOrdinary,
+    needsReview: !pending && unseenOrdinary === 0 && deferred.length > 0,
     answeredCount: answered.length,
     ordinaryAnswered,
     ordinaryTotal: ordinary.length,

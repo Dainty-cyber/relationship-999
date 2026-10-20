@@ -91,6 +91,7 @@
         </div>
         <div class="draw-area">
           <button class="primary-button" id="draw-button" disabled><svg class="icon"><use id="draw-icon" href="#i-spark"/></svg><span id="draw-label">正在准备</span><svg class="icon arrow-icon"><use href="#i-arrow"/></svg></button>
+          <button class="defer-button" id="defer-button" hidden>先放一放，聊下一题</button>
           <button class="text-button retry-button" id="retry-button" hidden>重新加载题库</button>
           <p class="draw-caption" id="draw-caption">每次一问 · 本轮不重复 · 认真听彼此说</p>
         </div>
@@ -108,10 +109,13 @@
       </div>
       <div class="journey-actions">
         <button class="text-button history-button" id="history-button"><svg class="icon"><use href="#i-history"/></svg>抽签记录<span class="count-badge" id="history-count">0</span></button>
+        <button class="text-button" id="pending-button" disabled>待聊<span class="count-badge" id="pending-count">0</span></button>
         <span class="action-divider" aria-hidden="true"></span>
         <button class="text-button reset-button" id="reset-button" disabled><svg class="icon"><use href="#i-reset"/></svg><span id="reset-label">重新开始</span></button>
       </div>
     </section>
+
+    <div class="progress-tools"><button class="text-button" id="backup-button" disabled>备份与恢复进度 <span aria-hidden="true">↗</span></button><span>换手机，也能接着聊。</span></div>
 
     <aside class="gentle-note"><span aria-hidden="true">“</span><p>没有标准答案，也不用一次聊完。<br>比答案更珍贵的，是愿意了解彼此的心意。</p></aside>
     <noscript><p class="noscript">请开启浏览器 JavaScript 后使用抽签功能。</p></noscript>
@@ -130,6 +134,31 @@
     <div class="dialog-header"><h2 id="reset-title">让故事重新开始？</h2><button class="icon-button" data-close aria-label="关闭确认窗口"><svg class="icon"><use href="#i-close"/></svg></button></div>
     <p id="reset-description">这会清空当前版本的抽签记录和「已聊完」进度，最后一题会重新锁定。另一个版本的进度会保留。</p>
     <div class="dialog-actions"><button class="secondary-button" data-close autofocus>保留记录</button><button class="primary-button" id="confirm-reset">确认重新开始</button></div>
+  </dialog>
+
+  <dialog id="pending-dialog" class="history-dialog" aria-labelledby="pending-title">
+    <div class="dialog-header"><div><span class="eyebrow">WHEN YOU ARE READY</span><h2 id="pending-title">留到稍后聊的问题</h2></div><button class="icon-button" data-close aria-label="关闭待聊列表"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <p class="dialog-intro" id="pending-summary">不急着回答，准备好了再继续。</p>
+    <div class="history-list pending-list" id="pending-list"></div>
+    <p class="dialog-footnote">暂放的题仍算未完成。全部聊完后，才会解锁最后一签。</p>
+  </dialog>
+
+  <dialog id="backup-dialog" class="small-dialog" aria-labelledby="backup-title">
+    <div class="dialog-header"><h2 id="backup-title">把进度好好收起来</h2><button class="icon-button" data-close aria-label="关闭进度备份"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <p id="backup-summary"></p>
+    <p>导出进度文件，换手机或浏览器时再导入，就能接着聊。每份文件只备份当前版本，保存题号和聊天进度。</p>
+    <div class="backup-actions"><button class="primary-button" id="export-button">导出当前版本进度</button><button class="secondary-button" id="import-button">选择进度备份文件</button></div>
+    <p class="inline-feedback" id="backup-feedback" role="status" hidden></p>
+    <p class="inline-error" id="backup-error" role="alert" hidden></p>
+    <input id="backup-file" type="file" accept=".json,application/json" hidden>
+  </dialog>
+
+  <dialog id="import-dialog" class="small-dialog" aria-labelledby="import-title">
+    <div class="dialog-header"><h2 id="import-title">恢复这份聊天进度？</h2><button class="icon-button" data-close aria-label="取消导入进度"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <p class="import-summary" id="import-summary"></p>
+    <p id="import-warning">确认后会替换对应版本在当前浏览器的记录，另一个版本会保留。需要保留现有记录时，可先取消并导出一份备份。</p>
+    <p class="inline-error" id="import-error" role="alert" hidden></p>
+    <div class="dialog-actions"><button class="secondary-button" data-close autofocus>暂不导入</button><button class="primary-button" id="confirm-import">确认恢复进度</button></div>
   </dialog>
 
   <dialog id="share-dialog" class="small-dialog" aria-labelledby="share-title">

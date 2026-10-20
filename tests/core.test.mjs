@@ -160,7 +160,7 @@ test('preview serves real assets and the configured bank, with correct MIME and 
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(() => new Promise(resolve => server.close(resolve)));
   const base = `http://127.0.0.1:${server.address().port}`;
-  for (const route of ['/', '/styles.css', '/app.mjs', '/core.mjs', '/editions.mjs', '/favicon.svg']) {
+  for (const route of ['/', '/styles.css', '/app.mjs', '/core.mjs', '/editions.mjs', '/backup.mjs', '/favicon.svg']) {
     const response = await fetch(base + route);
     assert.equal(response.status, 200);
     if (route.endsWith('.mjs')) assert.match(response.headers.get('content-type'), /javascript/);
