@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbf7f2">
+  <meta name="description" content="确定关系前的 999 问。抽一支签，聊一个问题，在认真的倾听里，慢慢靠近彼此。">
+  <title>确定关系前的 999 问 · 遇见彼此</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.6 5.7a5.2 5.2 0 0 0-7.4 0L12 6.9l-1.2-1.2a5.2 5.2 0 0 0-7.4 7.4L12 21l8.6-7.9a5.2 5.2 0 0 0 0-7.4Z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M8 10H5v10h14V10h-3M12 15V3m-4 4 4-4 4 4"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.6 7M3 5v6h6m3-4v6l4 2"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  </defs></svg>
+
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="遇见彼此，首页">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 30C4 21 7 8 16 11c2 .7 4 3 4 3s2-2.3 4-3c9-3 12 10-4 19Z"/><path d="M20 14c-6 8-2 13 0 16"/></svg></span>
+      <span class="brand-name">遇见彼此<span>BEFORE WE BECOME US</span></span>
+    </a>
+    <nav aria-label="页面导航">
+      <button class="text-button about-button" id="about-button">关于这份心意</button>
+      <button class="share-button" id="share-button"><svg class="icon"><use href="#i-share"/></svg><span>分享给 TA</span></button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="page-title">
+      <div class="eyebrow"><span></span> A LITTLE CLOSER <span></span></div>
+      <h1 id="page-title">确定关系前的 <em>999</em> 问<span class="title-star" aria-hidden="true">✧</span></h1>
+      <p>有些话，从一个好问题开始。<br class="mobile-break">抽一支签，把彼此说给对方听。</p>
+      <div class="intro-tag"><span aria-hidden="true">♡</span> 不赶时间，我们慢慢了解</div>
+    </section>
+
+    <section class="lottery" aria-label="问题抽签">
+      <div class="illustration-panel" id="illustration-panel">
+        <span class="panel-caption">A QUESTION, A CONNECTION.</span>
+        <span class="floating-star star-one" aria-hidden="true">✧</span><span class="floating-star star-two" aria-hidden="true">✧</span>
+        <span class="floating-heart" aria-hidden="true">♡</span>
+        <button class="jar-button" id="jar-button" aria-label="摇一摇签筒，抽一道问题" disabled>
+          <svg class="jar-art" viewBox="0 0 300 330" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="jar-fill" x1="73" y1="170" x2="233" y2="275" gradientUnits="userSpaceOnUse"><stop stop-color="#E4ACA9"/><stop offset=".48" stop-color="#DB9998"/><stop offset="1" stop-color="#C98285"/></linearGradient>
+              <linearGradient id="stick-fill" x1="0" y1="0" x2="20" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#F9E9D4"/><stop offset="1" stop-color="#E6C8A7"/></linearGradient>
+              <filter id="shadow" x="35" y="268" width="240" height="50"><feGaussianBlur stdDeviation="6"/></filter>
+            </defs>
+            <ellipse cx="153" cy="293" rx="83" ry="9" fill="#AD7976" opacity=".13" filter="url(#shadow)"/>
+            <g class="sticks">
+              <g transform="translate(89 72) rotate(-15)"><rect width="18" height="177" rx="6" fill="url(#stick-fill)" stroke="#D8B997"/><path d="M9 15v26m0 8v5" stroke="#B98876" stroke-linecap="round"/></g>
+              <g transform="translate(119 45) rotate(-5)"><rect width="18" height="200" rx="6" fill="#F5E3CB" stroke="#DCC1A2"/><path d="M9 16v23m0 8v6" stroke="#BC8C7D" stroke-linecap="round"/></g>
+              <g class="chosen-stick" transform="translate(160 33) rotate(7)"><rect width="19" height="215" rx="6" fill="#FFF1DB" stroke="#DCC1A2"/><path d="M6 17c4-4 10 0 3 6-7-6-1-10 3-6" stroke="#C58383" stroke-width="1.4"/><path d="M9 37v20" stroke="#BF8A76" stroke-linecap="round"/></g>
+              <g transform="translate(191 58) rotate(16)"><rect width="18" height="185" rx="6" fill="#F1DDC2" stroke="#D5B592"/><path d="M9 16v23m0 8v6" stroke="#B98876" stroke-linecap="round"/></g>
+              <g transform="translate(211 89) rotate(22)"><rect width="17" height="160" rx="6" fill="#EAD1B3" stroke="#D1AE88"/><path d="M8 15v25" stroke="#B98876" stroke-linecap="round"/></g>
+              <g transform="translate(142 80) rotate(-1)"><rect width="18" height="170" rx="6" fill="#FBEBD5" stroke="#DDC1A0"/></g>
+            </g>
+            <ellipse cx="150" cy="163" rx="79" ry="21" fill="#B87378" stroke="#D39798" stroke-width="3"/>
+            <path d="M71 162c3 38 6 74 12 109 2 17 132 22 136 0 6-35 8-71 10-109-32 25-125 25-158 0Z" fill="url(#jar-fill)"/>
+            <path d="M84 177c2 32 5 60 9 88" stroke="#F0C6BD" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+            <path d="M76 172c36 21 112 21 149 0M82 265c39 19 101 19 138 0" stroke="#C28788" stroke-width="1.5"/>
+            <path d="M150 194c-9 7-16 8-25 8v46c11 1 17 5 25 11 8-6 14-10 25-11v-46c-9 0-16-1-25-8Z" fill="#F9EDE0" stroke="#F9EDE0" stroke-width="4"/>
+            <path d="M148 209c-7-6-12 4 2 13 14-9 9-19 2-13l-2 2-2-2Z" fill="#CD9091"/>
+            <text x="150" y="243" text-anchor="middle" fill="#A86F73" font-size="14" font-family="serif" letter-spacing="3">知心</text>
+          </svg>
+        </button>
+        <div class="jar-note"><span class="small-line"></span><span id="jar-hint">一支小签，一点靠近</span><span class="small-line"></span></div>
+        <p class="illustration-footnote">把好奇留给你，把时间留给我们。</p>
+      </div>
+
+      <div class="question-panel">
+        <div class="letter-heading"><span>TO: 想要认真了解的你</span><svg class="icon"><use href="#i-heart"/></svg></div>
+        <div class="question-stage" id="question-stage" aria-live="polite" aria-atomic="true">
+          <span class="question-label" id="question-label">正在准备签筒</span>
+          <h2 class="question-text is-welcome" id="question-text">每一个问题，<br>都是走近你的起点。</h2>
+          <p class="question-note" id="question-note">稍等片刻，让心意就位。</p>
+        </div>
+        <div class="draw-area">
+          <button class="primary-button" id="draw-button" disabled><svg class="icon"><use id="draw-icon" href="#i-spark"/></svg><span id="draw-label">正在准备</span><svg class="icon arrow-icon"><use href="#i-arrow"/></svg></button>
+          <button class="text-button retry-button" id="retry-button" hidden>重新加载题库</button>
+          <p class="draw-caption" id="draw-caption">每次一问 · 本轮不重复 · 认真听彼此说</p>
+        </div>
+        <span class="letter-corner" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <p class="finale-note" id="finale-note"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>最后一签 · 聊完前 998 题后解锁</p>
+
+    <section class="journey" aria-label="本轮抽签进度">
+      <div class="journey-main">
+        <div class="journey-heading"><span><span class="status-dot"></span>相互了解的旅程</span><span id="progress-text">题库准备中</span></div>
+        <div class="progress-track" role="progressbar" aria-label="已聊完题数" aria-valuemin="0" aria-valuemax="999" aria-valuenow="0" id="progress-bar"><div id="progress-fill"></div></div>
+        <p class="storage-note" id="storage-note">抽签进度只保存在当前浏览器，留给你们自己。</p>
+      </div>
+      <div class="journey-actions">
+        <button class="text-button history-button" id="history-button"><svg class="icon"><use href="#i-history"/></svg>抽签记录<span class="count-badge" id="history-count">0</span></button>
+        <span class="action-divider" aria-hidden="true"></span>
+        <button class="text-button reset-button" id="reset-button" disabled><svg class="icon"><use href="#i-reset"/></svg><span id="reset-label">重新开始</span></button>
+      </div>
+    </section>
+
+    <aside class="gentle-note"><span aria-hidden="true">“</span><p>没有标准答案，也不用一次聊完。<br>比答案更珍贵的，是愿意了解彼此的心意。</p></aside>
+    <noscript><p class="noscript">请开启浏览器 JavaScript 后使用抽签功能。</p></noscript>
+  </main>
+
+  <footer class="site-footer"><span>遇见彼此 <span class="footer-heart">♡</span> 从好奇，到在意。</span><span>ONE QUESTION CLOSER.</span></footer>
+
+  <dialog id="history-dialog" class="history-dialog" aria-labelledby="history-title">
+    <div class="dialog-header"><div><span class="eyebrow">OUR LITTLE JOURNEY</span><h2 id="history-title">那些聊过的问题</h2></div><button class="icon-button" data-close aria-label="关闭抽签记录"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <p class="dialog-intro" id="history-summary">每一支签，都是了解彼此的一小步。</p>
+    <div id="history-list" class="history-list"></div>
+    <p class="dialog-footnote">记录仅保存在当前浏览器，清除浏览器数据后会丢失。</p>
+  </dialog>
+
+  <dialog id="reset-dialog" class="small-dialog" aria-labelledby="reset-title">
+    <div class="dialog-header"><h2 id="reset-title">让故事重新开始？</h2><button class="icon-button" data-close aria-label="关闭确认窗口"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <p>这会清空当前浏览器的抽签记录和「已聊完」进度。所有问题会重新放回签筒，第 999 题也会重新锁定。</p>
+    <div class="dialog-actions"><button class="secondary-button" data-close autofocus>保留记录</button><button class="primary-button" id="confirm-reset">确认重新开始</button></div>
+  </dialog>
+
+  <dialog id="share-dialog" class="small-dialog" aria-labelledby="share-title">
+    <div class="dialog-header"><h2 id="share-title">把这份心意分享给 TA</h2><button class="icon-button" data-close aria-label="关闭分享窗口"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <p id="share-description">长按或选中下方链接，复制后发送给对方。</p>
+    <label class="link-label" for="share-url">网页链接</label><input class="share-url" id="share-url" type="url" readonly>
+    <p class="dialog-footnote">微信内可点击右上角菜单转发。每个人的抽签进度独立保存。</p>
+  </dialog>
+
+  <dialog id="about-dialog" class="small-dialog about-dialog" aria-labelledby="about-title">
+    <div class="dialog-header"><span class="eyebrow">BEFORE WE BECOME US</span><button class="icon-button" data-close aria-label="关闭介绍"><svg class="icon"><use href="#i-close"/></svg></button></div>
+    <h2 id="about-title">在说「我们」之前，<br>先好好认识「你」。</h2>
+    <p>从日常的小习惯，到未来的期待。抽一支签，挑一个舒服的时刻，把心里的答案慢慢讲给对方听。</p>
+    <p>你可以在一个问题上停留很久，等彼此都愿意聊时再继续。聊完后点「已聊完」，前 998 题都确认后，最后一签就会解锁。</p>
+    <p class="about-signoff">愿每一次好奇，都有温柔的回应。<span>♡</span></p>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
