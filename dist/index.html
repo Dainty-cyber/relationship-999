@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fbf7f2">
-  <meta name="description" content="确定关系前的 999 问。抽一支签，聊一个问题，在认真的倾听里，慢慢靠近彼此。">
-  <title>确定关系前的 999 问 · 遇见彼此</title>
+  <meta name="description" content="确定关系前的 99 问与 999 问。精简版与完整版自由切换，抽一支签，聊一个问题，慢慢靠近彼此。">
+  <title>确定关系前的 99 / 999 问 · 遇见彼此</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
   <script type="module" src="./app.mjs"></script>
@@ -36,9 +36,15 @@
   <main>
     <section class="intro" aria-labelledby="page-title">
       <div class="eyebrow"><span></span> A LITTLE CLOSER <span></span></div>
-      <h1 id="page-title">确定关系前的 <em>999</em> 问<span class="title-star" aria-hidden="true">✧</span></h1>
+      <h1 id="page-title">确定关系前的 <em id="question-total">99</em> 问<span class="title-star" aria-hidden="true">✧</span></h1>
       <p>有些话，从一个好问题开始。<br class="mobile-break">抽一支签，把彼此说给对方听。</p>
       <div class="intro-tag"><span aria-hidden="true">♡</span> 不赶时间，我们慢慢了解</div>
+      <div class="edition-switch" role="group" aria-label="选择题库版本">
+        <button type="button" id="edition-concise" data-edition="concise" aria-pressed="true" disabled><span>精简版</span><strong>99 问</strong><small>精选 · 轻一点开始</small></button>
+        <button type="button" id="edition-full" data-edition="full" aria-pressed="false" disabled><span>完整版</span><strong>999 问</strong><small>完整 · 慢慢了解你</small></button>
+      </div>
+      <p class="edition-description" id="edition-description">精选 98 个问题，再留一句心意给最后。</p>
+      <p class="edition-save-note">两版进度独立保存，切换不会清空记录。</p>
     </section>
 
     <section class="lottery" aria-label="问题抽签">
@@ -80,6 +86,7 @@
         <div class="question-stage" id="question-stage" aria-live="polite" aria-atomic="true">
           <span class="question-label" id="question-label">正在准备签筒</span>
           <h2 class="question-text is-welcome" id="question-text">每一个问题，<br>都是走近你的起点。</h2>
+          <p class="question-source" id="question-source" hidden></p>
           <p class="question-note" id="question-note">稍等片刻，让心意就位。</p>
         </div>
         <div class="draw-area">
@@ -91,7 +98,7 @@
       </div>
     </section>
 
-    <p class="finale-note" id="finale-note"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg>最后一签 · 聊完前 998 题后解锁</p>
+    <p class="finale-note" id="finale-note">最后一签 · 聊完前 98 题后解锁</p>
 
     <section class="journey" aria-label="本轮抽签进度">
       <div class="journey-main">
@@ -121,7 +128,7 @@
 
   <dialog id="reset-dialog" class="small-dialog" aria-labelledby="reset-title">
     <div class="dialog-header"><h2 id="reset-title">让故事重新开始？</h2><button class="icon-button" data-close aria-label="关闭确认窗口"><svg class="icon"><use href="#i-close"/></svg></button></div>
-    <p>这会清空当前浏览器的抽签记录和「已聊完」进度。所有问题会重新放回签筒，第 999 题也会重新锁定。</p>
+    <p id="reset-description">这会清空当前版本的抽签记录和「已聊完」进度，最后一题会重新锁定。另一个版本的进度会保留。</p>
     <div class="dialog-actions"><button class="secondary-button" data-close autofocus>保留记录</button><button class="primary-button" id="confirm-reset">确认重新开始</button></div>
   </dialog>
 
@@ -136,7 +143,7 @@
     <div class="dialog-header"><span class="eyebrow">BEFORE WE BECOME US</span><button class="icon-button" data-close aria-label="关闭介绍"><svg class="icon"><use href="#i-close"/></svg></button></div>
     <h2 id="about-title">在说「我们」之前，<br>先好好认识「你」。</h2>
     <p>从日常的小习惯，到未来的期待。抽一支签，挑一个舒服的时刻，把心里的答案慢慢讲给对方听。</p>
-    <p>你可以在一个问题上停留很久，等彼此都愿意聊时再继续。聊完后点「已聊完」，前 998 题都确认后，最后一签就会解锁。</p>
+    <p id="about-rules">你可以在一个问题上停留很久，等彼此都愿意聊时再继续。聊完后点「已聊完」，前 98 题都确认后，最后一签就会解锁。</p>
     <p class="about-signoff">愿每一次好奇，都有温柔的回应。<span>♡</span></p>
   </dialog>
 

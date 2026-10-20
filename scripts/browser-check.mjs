@@ -6,6 +6,7 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { createPreviewServer } from './serve.mjs';
 import { fingerprintBank } from '../dist/core.mjs';
+import { EDITIONS, editionBank } from '../dist/editions.mjs';
 
 const args = process.argv.slice(2);
 const value = name => args[args.indexOf(name) + 1];
@@ -16,11 +17,12 @@ await mkdir(outputs, { recursive: true });
 const server = createPreviewServer();
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
+const fullBase = base + '?edition=full';
 let browser;
 const reports = [];
 const errors = [];
 const key = 'before-we-become-us:progress:v2';
-const bank = { version: 1, questions: Array.from({ length: 999 }, (_, index) => ({ id: String(index + 1).padStart(3, '0'), text: `自动测试占位 ${index + 1}（不属于用户题库）` })) };
+const bank = { version: 1, questions: Array.from({ length: 999 }, (_, index) => ({ id: String(index + 1), text: `自动测试占位 ${index + 1}（不属于用户题库）` })) };
 bank.questions[997].text = '自动测试长文本：' + '验证手机上长题目能够完整换行和滚动阅读。'.repeat(22) + '\n<script>window.__unsafe = true</script>';
 const bankId = await fingerprintBank(bank);
 
@@ -34,6 +36,13 @@ async function drawOnce(page) {
   if (await page.locator('#draw-button').getAttribute('data-action') === 'confirm') await confirmCurrent(page);
   await page.locator('#draw-button').click();
   await page.waitForFunction(() => document.getElementById('draw-button').dataset.action === 'confirm' && !document.getElementById('draw-button').disabled);
+}
+async function switchTo(page, edition) {
+  await page.locator(`#edition-${edition}`).click();
+  await page.waitForFunction(key => {
+    const button = document.getElementById(`edition-${key}`);
+    return button.getAttribute('aria-pressed') === 'true' && !button.disabled;
+  }, edition);
 }
 async function trackedContext(options = {}, fixture = true) {
   const context = await browser.newContext(options);
@@ -73,7 +82,7 @@ try {
 
   const context = await trackedContext();
   const page = await context.newPage();
-  await page.goto(base); await waitReady(page);
+  await page.goto(fullBase); await waitReady(page);
   // Multiple event deliveries in the same tick must still reserve only one.
   await page.evaluate(() => { for (let index = 0; index < 25; index++) document.getElementById('draw-button').click(); });
   await waitReady(page);
@@ -101,7 +110,7 @@ try {
   assert.equal(await page.locator('#reset-button').isDisabled(), true);
   reports.push('连续点击保护、刷新恢复、历史原文、取消/确认重置通过');
 
-  const page2 = await context.newPage(); await page2.goto(base); await waitReady(page2);
+  const page2 = await context.newPage(); await page2.goto(fullBase); await waitReady(page2);
   await Promise.all([page.evaluate(() => document.getElementById('jar-button').click()), page2.evaluate(() => document.getElementById('jar-button').click())]);
   await Promise.all([waitReady(page), waitReady(page2)]);
   assert.equal(await count(page), '1'); assert.equal(await count(page2), '1');
@@ -169,19 +178,26 @@ try {
 
   const memoryContext = await trackedContext({ reducedMotion: 'reduce', viewport: { width: 320, height: 800 } });
   await memoryContext.addInitScript(() => Object.defineProperty(window, 'localStorage', { get() { throw new Error('storage denied'); } }));
-  const memoryPage = await memoryContext.newPage(); await memoryPage.goto(base); await waitReady(memoryPage);
+  const memoryPage = await memoryContext.newPage(); await memoryPage.goto(fullBase); await waitReady(memoryPage);
   assert.match(await memoryPage.locator('#storage-note').textContent(), /本次打开期间/);
   await drawOnce(memoryPage); await drawOnce(memoryPage);
   assert.equal(await count(memoryPage), '2');
   assert.equal(await memoryPage.locator('#question-stage').evaluate(el => getComputedStyle(el).animationName), 'none');
   assert.equal(await memoryPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await memoryPage.locator('#edition-concise').click();
+  await memoryPage.waitForFunction(() => document.getElementById('question-total').textContent === '99' && !document.getElementById('draw-button').disabled);
+  assert.equal(await count(memoryPage), '0');
+  await drawOnce(memoryPage);
+  await memoryPage.locator('#edition-full').click();
+  await memoryPage.waitForFunction(() => document.getElementById('question-total').textContent === '999' && !document.getElementById('draw-button').disabled);
+  assert.equal(await count(memoryPage), '2');
   await memoryPage.reload(); await waitReady(memoryPage);
   assert.equal(await count(memoryPage), '0');
   reports.push('存储不可用时内存抽签、清晰提示、320px 布局与减少动画通过');
   await memoryContext.close();
 
   const quotaContext = await trackedContext({ reducedMotion: 'reduce' });
-  const quotaPage = await quotaContext.newPage(); await quotaPage.goto(base); await waitReady(quotaPage);
+  const quotaPage = await quotaContext.newPage(); await quotaPage.goto(fullBase); await waitReady(quotaPage);
   await quotaPage.evaluate(() => { Storage.prototype.setItem = () => { throw new Error('quota exceeded'); }; });
   await drawOnce(quotaPage); await drawOnce(quotaPage);
   assert.equal(await count(quotaPage), '2');
@@ -199,17 +215,17 @@ try {
   await shareContext.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { value: { writeText: async text => { window.__copied = text; } }, configurable: true }));
   const sharePage = await shareContext.newPage(); await sharePage.goto('https://questions.test/?from=chat#section');
   await sharePage.locator('#share-button').click();
-  assert.equal(await sharePage.evaluate(() => window.__copied), 'https://questions.test/');
+  assert.equal(await sharePage.evaluate(() => window.__copied), 'https://questions.test/?edition=concise');
   await sharePage.evaluate(() => Object.defineProperty(navigator, 'clipboard', { value: { writeText: async () => { throw new Error('blocked'); } } }));
   await sharePage.locator('#share-button').click();
   assert.equal(await sharePage.locator('#share-dialog').evaluate(el => el.open), true);
-  assert.equal(await sharePage.locator('#share-url').inputValue(), 'https://questions.test/');
+  assert.equal(await sharePage.locator('#share-url').inputValue(), 'https://questions.test/?edition=concise');
   reports.push('公开地址复制、去掉参数、剪贴板拒绝时显示可手动复制链接通过');
   await shareContext.close();
 
   // Final visual QA uses the actual imported bank, without interception.
   const real = await trackedContext({ viewport: { width: 1440, height: 1080 } }, false);
-  const actual = await real.newPage(); await actual.goto(base); await waitReady(actual);
+  const actual = await real.newPage(); await actual.goto(fullBase); await waitReady(actual);
   await actual.screenshot({ path: path.join(outputs, 'desktop.png'), fullPage: true, animations: 'disabled' });
   await actual.setViewportSize({ width: 390, height: 1000 });
   await drawOnce(actual);
@@ -222,6 +238,113 @@ try {
   await actual.screenshot({ path: path.join(outputs, 'finale.png'), fullPage: true, animations: 'disabled' });
   await real.close();
   reports.push('正式 999 题加载与桌面/手机/最后一签视觉截图完成');
+
+  const concise = editionBank(realBank, 'concise');
+  const conciseId = await fingerprintBank(concise);
+  const shortKey = EDITIONS.concise.storageKey;
+  const editionsContext = await trackedContext({ viewport: { width: 1440, height: 1080 } }, false);
+  const shortPage = await editionsContext.newPage();
+  await shortPage.goto(base); await waitReady(shortPage);
+  assert.equal(await shortPage.locator('#question-total').textContent(), '99');
+  assert.match(await shortPage.locator('#progress-text').textContent(), /0 \/ 99$/);
+  await shortPage.screenshot({ path: path.join(outputs, 'editions-desktop.png'), fullPage: true, animations: 'disabled' });
+  await shortPage.locator('#draw-button').click();
+  assert.equal(await shortPage.locator('#edition-full').isDisabled(), true);
+  await shortPage.locator('#edition-full').evaluate(button => button.click());
+  assert.equal(await shortPage.locator('#edition-concise').getAttribute('aria-pressed'), 'true');
+  await waitReady(shortPage);
+  const shortText = await shortPage.locator('#question-text').textContent();
+  assert.equal(await count(shortPage), '1');
+  const shortState = await shortPage.evaluate(key => JSON.parse(localStorage.getItem(key)), shortKey);
+  assert.ok(concise.questions.some(q => q.id === shortState.history[0].id));
+  assert.notEqual(shortState.history[0].id, '999');
+  assert.match(await shortPage.locator('#question-source').textContent(), /原题号/);
+  await shortPage.setViewportSize({ width: 390, height: 1000 });
+  assert.equal(await shortPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await shortPage.screenshot({ path: path.join(outputs, 'editions-mobile.png'), fullPage: true, animations: 'disabled' });
+  await switchTo(shortPage, 'full');
+  assert.equal(await count(shortPage), '0');
+  assert.match(await shortPage.locator('#progress-text').textContent(), /0 \/ 999$/);
+  await drawOnce(shortPage); await confirmCurrent(shortPage);
+  const fullText = await shortPage.locator('#question-text').textContent();
+  await switchTo(shortPage, 'concise');
+  assert.equal(await count(shortPage), '1');
+  assert.equal(await shortPage.locator('#question-text').textContent(), shortText);
+  assert.match(await shortPage.locator('#progress-text').textContent(), /0 \/ 99$/);
+  await shortPage.reload(); await waitReady(shortPage);
+  assert.equal(await shortPage.locator('#question-total').textContent(), '99');
+  assert.equal(await shortPage.locator('#question-text').textContent(), shortText);
+  await shortPage.locator('#history-button').click();
+  assert.equal(await shortPage.locator('.history-item').count(), 1);
+  assert.match(await shortPage.locator('#history-title').textContent(), /精简版/);
+  await shortPage.keyboard.press('Escape');
+  await shortPage.locator('#reset-button').click();
+  assert.match(await shortPage.locator('#reset-description').textContent(), /另一个版本的进度会保留/);
+  await shortPage.locator('#confirm-reset').click(); await waitReady(shortPage);
+  assert.equal(await count(shortPage), '0');
+  await switchTo(shortPage, 'full');
+  assert.equal(await count(shortPage), '1');
+  assert.equal(await shortPage.locator('#question-text').textContent(), fullText);
+  assert.match(await shortPage.locator('#progress-text').textContent(), /已聊完 1 \/ 999$/);
+  await switchTo(shortPage, 'concise');
+
+  const fullPage = await editionsContext.newPage();
+  await fullPage.goto(fullBase); await waitReady(fullPage);
+  await drawOnce(fullPage); await confirmCurrent(fullPage);
+  assert.match(await fullPage.locator('#progress-text').textContent(), /已聊完 2 \/ 999$/);
+  assert.equal(await count(shortPage), '0');
+  assert.equal(await shortPage.locator('#question-total').textContent(), '99');
+  await fullPage.close();
+  reports.push('新用户默认99问；切换/刷新恢复各自题目和记录，重置只影响当前版，不同版本标签页互不干扰通过');
+
+  await shortPage.evaluate(({ key, bankId, qs }) => localStorage.setItem(key, JSON.stringify({ version: 2, bankId, history: qs.slice(0, 97).map(q => ({ id: q.id, drawnAt: '2026-10-20T08:00:00.000Z', answeredAt: '2026-10-20T08:00:00.000Z' })) })), { key: shortKey, bankId: conciseId, qs: concise.questions });
+  await shortPage.reload(); await waitReady(shortPage);
+  await drawOnce(shortPage);
+  assert.equal(await count(shortPage), '98');
+  assert.match(await shortPage.locator('#progress-text').textContent(), /已聊完 97 \/ 99$/);
+  assert.equal(await shortPage.locator('#question-text').textContent(), concise.questions[97].text);
+  assert.doesNotMatch(await shortPage.locator('#draw-label').textContent(), /揭开/);
+  await confirmCurrent(shortPage);
+  assert.match(await shortPage.locator('#draw-label').textContent(), /揭开第 99 题/);
+  await shortPage.reload(); await waitReady(shortPage);
+  assert.match(await shortPage.locator('#draw-label').textContent(), /揭开第 99 题/);
+  await drawOnce(shortPage);
+  assert.equal(await shortPage.locator('#question-text').textContent(), concise.questions.at(-1).text);
+  assert.match(await shortPage.locator('#question-label').textContent(), /第 99 题 · 最后一签/);
+  assert.equal(await count(shortPage), '99');
+  await shortPage.screenshot({ path: path.join(outputs, 'editions-finale.png'), fullPage: true, animations: 'disabled' });
+  await confirmCurrent(shortPage);
+  assert.match(await shortPage.locator('#progress-text').textContent(), /已聊完 99 \/ 99$/);
+  assert.equal(await shortPage.locator('#draw-button').isDisabled(), true);
+  await shortPage.locator('#reset-button').click(); await shortPage.locator('#confirm-reset').click(); await waitReady(shortPage);
+  assert.equal(await count(shortPage), '0');
+  assert.doesNotMatch(await shortPage.locator('#finale-note').textContent(), /已解锁/);
+  await switchTo(shortPage, 'full');
+  assert.equal(await count(shortPage), '2');
+  await shortPage.locator('#share-button').click();
+  assert.match(await shortPage.locator('#share-url').inputValue(), /edition=full/);
+  await shortPage.keyboard.press('Escape');
+  await editionsContext.close();
+  reports.push('第98题确认后才解锁第99题，刷新保留解锁，完成99题/重新锁定以及分享当前版本通过');
+
+  const legacyContext = await trackedContext({}, false);
+  const legacyState = { version: 2, bankId: realId, history: [{ id: realBank.questions[40].id, drawnAt: '2026-10-20T08:00:00.000Z', answeredAt: null }] };
+  await legacyContext.addInitScript(({ key, state }) => {
+    // The initial about:blank document has an opaque origin and no storage.
+    if (!['http:', 'https:'].includes(location.protocol)) return;
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(state));
+  }, { key, state: legacyState });
+  const legacyPage = await legacyContext.newPage(); await legacyPage.goto(base); await waitReady(legacyPage);
+  assert.equal(await legacyPage.locator('#question-total').textContent(), '999');
+  assert.equal(await legacyPage.locator('#question-text').textContent(), realBank.questions[40].text);
+  assert.equal(await count(legacyPage), '1');
+  assert.deepEqual(await legacyPage.evaluate(key => JSON.parse(localStorage.getItem(key)), key), legacyState);
+  await switchTo(legacyPage, 'concise');
+  assert.equal(await count(legacyPage), '0');
+  await switchTo(legacyPage, 'full');
+  assert.equal(await legacyPage.locator('#question-text').textContent(), realBank.questions[40].text);
+  await legacyContext.close();
+  reports.push('已有完整版浏览器记录自动续接，原题、确认状态和历史原样保留通过');
 
   assert.deepEqual(errors, [], 'No browser runtime errors');
   console.log(reports.map(report => `✓ ${report}`).join('\n'));

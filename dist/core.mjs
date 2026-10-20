@@ -33,7 +33,7 @@ export function auditBank(bank, { expectedCount = 999 } = {}) {
       else texts.set(canonical, position);
     }
   });
-  if (expectedCount === 999 && !questions.some(question => question?.id === FINAL_QUESTION_ID)) {
+  if (!questions.some(question => question?.id === FINAL_QUESTION_ID)) {
     issues.push('缺少原题号为 999 的最后一题。');
   }
   return issues;

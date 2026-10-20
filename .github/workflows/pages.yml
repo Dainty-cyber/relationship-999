@@ -36,7 +36,7 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Validate all 999 original questions
+      - name: Validate full and concise question banks
         run: npm run check:publish
 
       - name: Configure GitHub Pages
