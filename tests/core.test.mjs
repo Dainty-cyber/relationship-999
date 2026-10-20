@@ -170,5 +170,10 @@ test('preview serves real assets and the configured bank, with correct MIME and 
   assert.deepEqual(data, source);
   assert.ok(!data.questions.some(question => question.text.includes('自动测试占位')), 'Do not publish test markers as the real bank');
   assert.equal((await fetch(base + '/missing.json')).status, 404);
-  assert.equal((await fetch(base + '/%2e%2e%5cpackage.json')).status, 403);
+  assert.equal((await fetch(base + '/%2e%2e%2fpackage.json')).status, 403);
+  // A backslash is a separator on Windows and a literal filename character on
+  // POSIX. Both responses must deny access to the file outside the static root.
+  const windowsTraversal = await fetch(base + '/%2e%2e%5cpackage.json');
+  assert.ok([403, 404].includes(windowsTraversal.status));
+  assert.doesNotMatch(await windowsTraversal.text(), /before-we-become-us/);
 });
