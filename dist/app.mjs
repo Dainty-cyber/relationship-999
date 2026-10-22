@@ -49,6 +49,11 @@ function updateEditionControls() {
 
 function updateEditionHeading() {
   const config = EDITIONS[edition];
+  const pairUrl = new URL('./pair.html', location.href);
+  pairUrl.searchParams.set('edition', edition);
+  const current = state ? roundStatus(state, questions).current : null;
+  if (current && !current.answeredAt && current.id !== FINAL_QUESTION_ID) pairUrl.searchParams.set('question', current.id);
+  $('pair-link').href = pairUrl.href;
   $('question-total').textContent = String(config.count);
   $('edition-description').textContent = config.description;
   document.title = `确定关系前的 ${config.count} 问 · ${config.label} · 遇见彼此`;

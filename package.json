@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node scripts/serve.mjs",
     "preview": "node scripts/serve.mjs",
+    "preview:pair": "node server/preview.mjs",
     "test": "node --test tests/*.test.mjs",
     "check:publish": "node scripts/check-ready.mjs"
   }

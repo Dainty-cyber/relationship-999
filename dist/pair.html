@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbf7f2">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <title>一起揭晓 · 遇见彼此</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./pair.css">
+  <script type="module" src="./pair.mjs"></script>
+</head>
+<body class="pair-page">
+  <header class="site-header">
+    <a class="brand" href="./"><span class="pair-brand-heart" aria-hidden="true">♡</span><span class="brand-name">遇见彼此<span>BEFORE WE BECOME US</span></span></a>
+    <a class="text-button pair-back" href="./">返回个人抽签 ↗</a>
+  </header>
+  <main class="pair-main">
+    <section class="pair-intro">
+      <div class="eyebrow">TWO HEARTS, ONE REVEAL</div>
+      <h1>先听自己的心，<br>再一起<em>揭晓</em>。</h1>
+      <p>同一道问题，两份独立的答案。<br>双方提交前，彼此都看不到对方的选择。</p>
+    </section>
+    <p id="pair-storage-warning" class="pair-alert" hidden>当前浏览器无法保存房间身份。请保持此页面打开，关闭后可能无法回到原来的位置。</p>
+    <section id="pair-lobby" class="pair-paper">
+      <div class="eyebrow">A LITTLE SPACE FOR US</div>
+      <h2 id="pair-lobby-title">留一个位置，给想了解的人</h2>
+      <p id="pair-lobby-note">创建一个只容纳两人的房间，把邀请链接发给 TA。双人进度独立，不影响原来的抽签记录。</p>
+      <form id="pair-entry-form">
+        <label class="pair-field-label" for="pair-name">希望 TA 怎样称呼你？</label>
+        <input id="pair-name" class="pair-input" autocomplete="nickname" maxlength="20" placeholder="写一个舒服的称呼" required>
+        <fieldset id="pair-editions" class="pair-editions"><legend>这次，想怎样开始？</legend>
+          <label><input type="radio" name="edition" value="concise" checked><span>精简版 <strong>99 问</strong><small>轻一点开始</small></span></label>
+          <label><input type="radio" name="edition" value="full"><span>完整版 <strong>999 问</strong><small>慢慢了解彼此</small></span></label>
+        </fieldset>
+        <p class="pair-privacy">双人回答会同步保存到云端，仅房间中的两人可查看。房间保留 7 天，任一方均可结束并删除。无需登录。</p>
+        <button class="primary-button" id="pair-enter" type="submit">创建房间，邀请 TA <span aria-hidden="true">→</span></button>
+      </form>
+      <p id="pair-entry-error" class="pair-error" role="alert" hidden></p>
+      <div id="pair-saved-rooms" class="pair-saved-rooms" hidden><h3>接着上次的相互了解</h3><div id="pair-saved-list"></div></div>
+    </section>
+    <section id="pair-room" hidden>
+      <div class="pair-room-bar"><div><span class="pair-live-dot" aria-hidden="true"></span><span id="pair-room-label">我们的双人房间</span></div><button class="text-button" id="pair-invite">复制邀请链接 ↗</button></div>
+      <div class="pair-participants" aria-label="双方提交状态">
+        <div><span class="pair-avatar" aria-hidden="true">♡</span><div><strong id="pair-name-a"></strong><span id="pair-status-a"></span></div></div>
+        <span class="pair-between" aria-hidden="true">··· ♡ ···</span>
+        <div><span class="pair-avatar" aria-hidden="true">♡</span><div><strong id="pair-name-b"></strong><span id="pair-status-b"></span></div></div>
+      </div>
+      <div class="pair-paper pair-question-paper">
+        <div class="pair-card-heading"><span id="pair-question-number"></span><span id="pair-phase">先独立想一想</span></div>
+        <h2 id="pair-question"></h2>
+        <p id="pair-answer-hint" class="pair-answer-hint"></p>
+        <form id="pair-answer-form">
+          <fieldset class="pair-choices" id="pair-choices"><legend>我的选择</legend></fieldset>
+          <label for="pair-answer-text" class="pair-field-label" id="pair-text-label">也可以补充一句自己的想法</label>
+          <textarea id="pair-answer-text" class="pair-input" rows="3" maxlength="500" placeholder="选项只是起点，用自己的话说也很好。"></textarea>
+          <span class="pair-text-count" id="pair-text-count">0 / 500</span>
+          <button type="submit" class="primary-button" id="pair-submit">提交并锁定我的答案 <span aria-hidden="true">→</span></button>
+          <p class="pair-submit-note">提交后不能修改。等双方都准备好，才会互相看见答案。</p>
+        </form>
+        <div id="pair-waiting" class="pair-waiting" hidden><span class="pair-envelope" aria-hidden="true">♡</span><h3>你的答案，已经放进信封</h3><p>对方还在认真想。我们等一等，一起揭晓。</p><div id="pair-own-answer" class="pair-own-answer"></div></div>
+        <div id="pair-results" hidden>
+          <div class="pair-reveal-label">两封信，都已打开</div>
+          <div class="pair-result-grid"><article><span id="pair-result-name-a"></span><h3 id="pair-result-choice-a"></h3><p id="pair-result-text-a"></p></article><article><span id="pair-result-name-b"></span><h3 id="pair-result-choice-b"></h3><p id="pair-result-text-b"></p></article></div>
+          <p class="pair-kind-note">相同，是一点默契；不同，是多了解彼此的机会。没有标准答案。</p>
+          <button class="primary-button" id="pair-seen">我看完了 · 记为已聊完</button>
+          <p id="pair-seen-note" class="pair-submit-note"></p>
+          <button class="primary-button" id="pair-next" hidden>一起抽下一题 <span aria-hidden="true">→</span></button>
+        </div>
+        <p id="pair-action-error" class="pair-error" role="alert" hidden></p>
+      </div>
+      <p id="pair-progress" class="pair-progress"></p>
+      <div class="pair-room-tools"><button class="text-button" id="pair-history-button">已揭晓的答案</button><button class="text-button" id="pair-sync">重新同步</button><button class="text-button" id="pair-close-button">结束并删除房间</button></div>
+      <p id="pair-connection" class="pair-connection" role="status" aria-live="polite">正在连接</p>
+      <p id="pair-expiry" class="pair-expiry"></p>
+      <div id="pair-link-fallback" class="pair-paper pair-link-fallback" hidden><label for="pair-invite-url" class="pair-field-label">长按复制完整链接，只发给想邀请的人</label><input id="pair-invite-url" class="pair-input" readonly><p>微信里也可以把复制的链接发送给对方。</p></div>
+    </section>
+    <section id="pair-unavailable" class="pair-paper" hidden><h2>这一次，先在这里停下</h2><p id="pair-unavailable-note"></p><button id="pair-back-lobby" class="primary-button">重新邀请，一起开始</button></section>
+    <p class="pair-bottom-note">认真选择，也尊重不同。<span aria-hidden="true">♡</span></p>
+  </main>
+  <dialog id="pair-close-dialog" class="small-dialog" aria-labelledby="pair-close-title"><div class="dialog-header"><h2 id="pair-close-title">结束这次双人问答？</h2><button class="icon-button" id="pair-cancel-close" aria-label="取消">×</button></div><p>这会删除双方的房间记录与回答，邀请链接也会失效。此操作无法撤销，个人抽签进度不会受影响。</p><div class="dialog-actions"><button class="secondary-button" id="pair-keep-room" autofocus>保留房间</button><button class="primary-button" id="pair-confirm-close">确认结束并删除</button></div></dialog>
+  <dialog id="pair-history-dialog" class="history-dialog" aria-labelledby="pair-history-title"><div class="dialog-header"><h2 id="pair-history-title">一起打开过的信</h2><button class="icon-button" id="pair-history-close" aria-label="关闭记录">×</button></div><div class="history-list" id="pair-history-list"></div></dialog>
+  <div id="pair-toast" class="toast" role="status" hidden></div>
+</body>
+</html>

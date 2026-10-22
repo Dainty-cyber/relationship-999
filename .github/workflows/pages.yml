@@ -39,6 +39,9 @@ jobs:
       - name: Validate full and concise question banks
         run: npm run check:publish
 
+      - name: Verify deployed paired-answer service
+        run: node scripts/pair-live-check.mjs https://yujian-bici-999-zh.greenhinny7.chatgpt.site
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 

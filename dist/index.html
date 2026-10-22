@@ -8,6 +8,7 @@
   <title>确定关系前的 99 / 999 问 · 遇见彼此</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./pair.css">
   <script type="module" src="./app.mjs"></script>
 </head>
 <body>
@@ -93,6 +94,7 @@
           <button class="primary-button" id="draw-button" disabled><svg class="icon"><use id="draw-icon" href="#i-spark"/></svg><span id="draw-label">正在准备</span><svg class="icon arrow-icon"><use href="#i-arrow"/></svg></button>
           <button class="defer-button" id="defer-button" hidden>先放一放，聊下一题</button>
           <button class="text-button retry-button" id="retry-button" hidden>重新加载题库</button>
+          <a class="pair-entry-link" id="pair-link" href="./pair.html?edition=concise">和 TA 一起答 · 双方提交后揭晓 ↗</a>
           <p class="draw-caption" id="draw-caption">每次一问 · 本轮不重复 · 认真听彼此说</p>
         </div>
         <span class="letter-corner" aria-hidden="true"></span>
